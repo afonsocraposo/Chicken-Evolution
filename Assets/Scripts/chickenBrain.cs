@@ -1,25 +1,41 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class chickenBrain : MonoBehaviour
 {
 
-    public float speed = 5;
-    public float directionChangeInterval = 1;
-    public float maxHeadingChange = 30;
-
+	[Header("Chicken Values Limits")]
+	public float minimumHealth;
+	public float maximumHealth;
 	public float minVisionRadius;
 	public float maxVisionRadius;
+	public float minimumSpeed;
+	public float maximumSpeed;
+
+
+	[Header("Chicken Characteristics")]
+    public float directionChangeInterval;
+    public float maxHeadingChange;
 	public float visionRadius;
-	public float rotationSpeed;
+	public float healthLostTimeFactor;
+	public float foodHealthGain;
+
+	[Header("Unity Stuff")]
+	public Image healthBar;
+	public GameObject chickenInfo;
+
+	float speed;
+	float health;
+	float maxHealthValue;
+    float heading;
 
 	bool foundFood = false;
+	bool alive = true;
 
 	CharacterController controller;
-    float heading;
     Vector3 targetRotation;
-
     Animator anim;
 
 
@@ -35,23 +51,55 @@ public class chickenBrain : MonoBehaviour
         anim.SetInteger("Walk", 1);
 
 		visionRadius = Random.Range(minVisionRadius, maxVisionRadius);
-		//visionRadius = 10f;
+
+		maxHealthValue = Random.Range(minimumHealth, maximumHealth);
+		health = maxHealthValue;
+
+		speed = Random.Range(minimumSpeed, maximumSpeed);
 
 		StartCoroutine(NewHeading());
-
     }
 
     void Update()
     {
-		Vision();
 
-		var rotation = getDegrees(getDegrees(-transform.eulerAngles[1] + 90f, 360) - heading, 180);
-		//var rotation = Input.GetAxis("Horizontal")*180;
+		chickenInfo.transform.LookAt(Camera.main.gameObject.transform.position);
 
-		transform.Rotate(0f, rotation * rotationSpeed * Time.deltaTime, 0f, Space.Self);
+		if(alive){
+			Vision();
 
-	    transform.position += transform.TransformDirection(Vector3.forward) * speed * Time.deltaTime;
-		//transform.position += transform.TransformDirection(Vector3.forward) * speed * Input.GetAxis("Vertical") * Time.deltaTime;
+			//heading = getDegrees(heading-Input.GetAxis("Horizontal")*15, 360);
+
+			var rotation = getDegrees(getDegrees(-transform.eulerAngles[1] + 90f, 360) - heading, 180);
+			//var rotation = Input.GetAxis("Horizontal")*180;
+
+			transform.Rotate(0f, rotation * speed * Time.deltaTime, 0f, Space.Self);
+
+			transform.position += transform.TransformDirection(Vector3.forward) * speed * Time.deltaTime;
+			//transform.position += transform.TransformDirection(Vector3.forward) * speed * Input.GetAxis("Vertical") * Time.deltaTime;
+		
+			// update Health
+			adjustHealth( -Time.deltaTime * healthLostTimeFactor);
+			
+
+		}
+
+
+	}
+
+	void adjustHealth(float value){
+		health += value;
+		if(health>maxHealthValue) health = maxHealthValue;
+		if(health<=0){
+			health=0;
+			alive = false;
+			anim.SetInteger("Walk", 0);
+		} 
+		adjustHealthBar();
+	}
+
+	void adjustHealthBar(){
+		healthBar.fillAmount = health/maxHealthValue;
 	}
 
 	/// <summary>
@@ -68,6 +116,10 @@ public class chickenBrain : MonoBehaviour
     }
 
 
+	void Eat(){
+		adjustHealth(foodHealthGain);
+	}
+
     void NewHeadingRoutine()
     {
 		if (!foundFood)
@@ -81,17 +133,26 @@ public class chickenBrain : MonoBehaviour
         
 		if (collision.gameObject.tag == "Wall" || (collision.gameObject.tag == "Chicken" && !foundFood))
 		{
-			// Set the altered rotation back
-			transform.Rotate(0f, 180f, 0f, Space.Self);
+			var angle = getDegrees(-transform.eulerAngles[1] + 90f, 360);
+			if(Mathf.Abs(collision.contacts[0].normal[0])>0.0f){
+				heading = getDegrees(180f - heading, 360);
+				transform.Rotate(0f, getDegrees(angle-heading, 180), 0f, Space.Self);
+			}else{
+				heading = getDegrees(-heading, 360);
+				transform.Rotate(0f, getDegrees(angle-heading, 180), 0f, Space.Self);
+			}
+		}
 
-			heading = getDegrees(heading + 180, 360);
-            
+		if (collision.gameObject.tag == "Food")
+		{
+			Eat();
+			NewHeadingRoutine();
 		}
 	}
 
-     int DistanceSort(Collider a, Collider b){
-         return (transform.position - a.transform.position).sqrMagnitude.CompareTo((transform.position - b.transform.position).sqrMagnitude);
-     }
+	int DistanceSort(Collider a, Collider b){
+		return (transform.position - a.transform.position).sqrMagnitude.CompareTo((transform.position - b.transform.position).sqrMagnitude);
+	}
 
     void Vision()
 	{
