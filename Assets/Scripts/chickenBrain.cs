@@ -150,27 +150,28 @@ public class chickenBrain : MonoBehaviour
 		}
     }
 
-	void OnCollisionEnter(Collision collision)
-	{ 
-        
-		if (collision.gameObject.tag == "Wall" || (collision.gameObject.tag == "Chicken" && !foundFood))
-		{
-            var d = transform.forward;
-            var n = collision.contacts[0].normal;
-            var r = d - 2 * Vector3.Dot(d, n) * n;
+    void OnCollisionEnter(Collision collision)
+    {
+        if (alive) { 
+            if (collision.gameObject.tag == "Wall" || (collision.gameObject.tag == "Chicken" && !foundFood))
+            {
+                var d = transform.forward;
+                var n = collision.contacts[0].normal;
+                var r = d - 2 * Vector3.Dot(d, n) * n;
 
-            heading = getDegrees(getAngle(0, r[0], 0, r[2]), 360);
+                heading = getDegrees(getAngle(0, r[0], 0, r[2]), 360);
 
-            var angle = getDegrees(getAngle(0, d[0], 0, d[2]), 360);
+                var angle = getDegrees(getAngle(0, d[0], 0, d[2]), 360);
 
-            transform.Rotate(0f, getDegrees(angle-heading, 180), 0f, Space.Self);
-		}
+                transform.Rotate(0f, getDegrees(angle - heading, 180), 0f, Space.Self);
+            }
 
-		if (collision.gameObject.tag == "Food")
-		{
-			Eat();
-			NewHeadingRoutine();
-		}
+            if (collision.gameObject.tag == "Food")
+            {
+                Eat();
+                NewHeadingRoutine();
+            }
+        }
 	}
 
 	int DistanceSort(Collider a, Collider b){
