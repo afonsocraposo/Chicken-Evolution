@@ -6,11 +6,17 @@ public class visionRadius : MonoBehaviour
 {
     private GameObject parent;
     private float scale;
+    private Quaternion rotation;
 
     // Start is called before the first frame update
     void Start()
     {
         parent = transform.parent.gameObject;
+    }
+
+    void Awake()
+    {
+        rotation = transform.rotation;
     }
 
     // Update is called once per frame
@@ -21,9 +27,11 @@ public class visionRadius : MonoBehaviour
             scale = parent.GetComponent<chickenBrain>().getVisionRadius();
             transform.localScale = new Vector3(scale*2, 0.1f, scale*2);
         }
+    }
 
-        transform.rotation = new Quaternion(0f, 0f, transform.rotation[2], 0f);
+    void LateUpdate()
+    {
         transform.position = new Vector3(parent.transform.position[0], 0f, parent.transform.position[2]);
-
+        transform.rotation = rotation;
     }
 }

@@ -1,9 +1,11 @@
 ﻿<Properties StartupConfiguration="{915E943D-EA74-04A1-E7CA-9D342374A008}|">
-  <MonoDevelop.Ide.Workbench ActiveDocument="Assets/Scripts/chickenBrain.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets/Scripts/cameraMovement.cs">
     <Files>
-      <File FileName="Assets/Scripts/chickenBrain.cs" Line="100" Column="107" />
+      <File FileName="Assets/Scripts/chickenBrain.cs" Line="82" Column="36" />
       <File FileName="Assets/RandomFromDistributions/Scripts/RandomFromDistribution.cs" Line="75" Column="46" />
       <File FileName="Assets/VoxelAnimals/Assets/Scripts/PlayerController.cs" Line="1" Column="1" />
+      <File FileName="Assets/Scripts/cameraMovement.cs" Line="40" Column="27" />
+      <File FileName="Assets/Scripts/visionRadius.cs" Line="34" Column="106" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.PinnedWatches />

@@ -24,6 +24,7 @@ public class chickenBrain : MonoBehaviour
 	[Header("Unity Stuff")]
 	public Image healthBar;
 	public GameObject chickenInfo;
+    public Text nameTagText;
 
     float visionRadius;
     float speed;
@@ -31,10 +32,15 @@ public class chickenBrain : MonoBehaviour
 	float maxHealth;
     float heading;
 
+    Quaternion rotation;
+
 	bool foundFood = false;
 	bool alive = true;
 
-	CharacterController controller;
+    string path = "Assets/Resources/names.txt";
+    string nameTag;
+
+    CharacterController controller;
     Vector3 targetRotation;
     Animator anim;
 
@@ -70,7 +76,13 @@ public class chickenBrain : MonoBehaviour
 
         StartCoroutine(NewHeading());
 
+        string[] lines = System.IO.File.ReadAllLines(path);
+
+        nameTag = lines[Random.Range(0, lines.Length)];
+        nameTagText.text = nameTag;
+
     }
+
 
     void Update()
     {
@@ -82,10 +94,10 @@ public class chickenBrain : MonoBehaviour
 
 			//heading = getDegrees(heading-Input.GetAxis("Horizontal")*15, 360);
 
-			var rotation = getDegrees(getDegrees(-transform.eulerAngles[1] + 90f, 360) - heading, 180);
+			var rot = getDegrees(getDegrees(-transform.eulerAngles[1] + 90f, 360) - heading, 180);
 			//var rotation = Input.GetAxis("Horizontal")*180;
 
-			transform.Rotate(0f, rotation * speed * Time.deltaTime, 0f, Space.Self);
+			transform.Rotate(0f, rot * speed * Time.deltaTime, 0f, Space.Self);
 
 			transform.position += transform.TransformDirection(Vector3.forward) * speed * Time.deltaTime;
 			//transform.position += transform.TransformDirection(Vector3.forward) * speed * Input.GetAxis("Vertical") * Time.deltaTime;
@@ -104,7 +116,7 @@ public class chickenBrain : MonoBehaviour
 
 	}
 
-	void adjustHealth(float value){
+    void adjustHealth(float value){
 		health += value;
 		if(health>maxHealth) health = maxHealth;
 		if(health<=0){
