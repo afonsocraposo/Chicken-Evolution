@@ -11,17 +11,19 @@ public class visionRadius : MonoBehaviour
     void Start()
     {
         parent = transform.parent.gameObject;
-        transform.position = new Vector3(parent.transform.position[0], 0f, parent.transform.position[2]);
     }
 
     // Update is called once per frame
     void Update()
     {
-        if (System.Math.Abs(parent.GetComponent<chickenBrain>().visionRadius - scale) > 0)
+        if (System.Math.Abs(parent.GetComponent<chickenBrain>().getVisionRadius() - scale) > 0)
         {
-            scale = parent.GetComponent<chickenBrain>().visionRadius;
+            scale = parent.GetComponent<chickenBrain>().getVisionRadius();
             transform.localScale = new Vector3(scale*2, 0.1f, scale*2);
         }
+
+        transform.rotation = new Quaternion(0f, 0f, transform.rotation[2], 0f);
+        transform.position = new Vector3(parent.transform.position[0], 0f, parent.transform.position[2]);
 
     }
 }

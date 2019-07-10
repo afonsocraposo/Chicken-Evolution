@@ -1,0 +1,16 @@
+﻿<Properties StartupConfiguration="{915E943D-EA74-04A1-E7CA-9D342374A008}|">
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets/Scripts/chickenBrain.cs">
+    <Files>
+      <File FileName="Assets/Scripts/chickenBrain.cs" Line="100" Column="107" />
+      <File FileName="Assets/RandomFromDistributions/Scripts/RandomFromDistribution.cs" Line="75" Column="46" />
+      <File FileName="Assets/VoxelAnimals/Assets/Scripts/PlayerController.cs" Line="1" Column="1" />
+    </Files>
+  </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
+  <MonoDevelop.Ide.ItemProperties.Assembly-CSharp PreferredExecutionTarget="6ac42637-de11-4aae-a911-69bc63da6ad9" />
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore />
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MultiItemStartupConfigurations />
+</Properties>
