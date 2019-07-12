@@ -13,7 +13,7 @@ public class chickenBrain : MonoBehaviour
 	public float visionRadiusStd;
 	public float speedMean;
 	public float speedStd;
-
+	public float abstinenciaTime;
 
 	[Header("Chicken Interactions")]
     public float directionChangeInterval;
@@ -36,6 +36,9 @@ public class chickenBrain : MonoBehaviour
 
 	bool foundFood = false;
 	bool alive = true;
+	bool readySex = false;
+	
+	float abstinenciaTimer;
 
     string path = "Assets/Resources/names.txt";
     string nameTag;
@@ -52,8 +55,7 @@ public class chickenBrain : MonoBehaviour
 
         // Set random initial rotation
         heading = Random.Range(0, 360);
-        transform.eulerAngles = new Vector3(0, heading, 0);
-
+        transform.eulerAngles = new Vector3(0, heading, 0);	
 
 		visionRadius = RandomFromDistribution.RandomNormalDistribution(visionRadiusMean, visionRadiusStd);
         if (visionRadius < 0) visionRadius = 0;
@@ -81,6 +83,8 @@ public class chickenBrain : MonoBehaviour
         nameTag = lines[Random.Range(0, lines.Length)];
         nameTagText.text = nameTag;
 
+		abstinenciaTimer = abstinenciaTime;
+
     }
 
 
@@ -105,6 +109,14 @@ public class chickenBrain : MonoBehaviour
 			// update Health
 			adjustHealth( -Time.deltaTime * healthLostTimeFactor);
 
+			if(!readySex){
+				abstinenciaTimer-=Time.deltaTime;
+				if(abstinenciaTimer<=0){
+					readySex = true;
+					print("Ready!");
+					abstinenciaTimer = abstinenciaTime;
+				}
+			}
 
         }
         else
@@ -178,7 +190,17 @@ public class chickenBrain : MonoBehaviour
                 transform.Rotate(0f, getDegrees(angle - heading, 180), 0f, Space.Self);
             }
 
-            if (collision.gameObject.tag == "Food")
+			
+			if (collision.gameObject.tag == "Chicken" && readySex && collision.gameObject.alive)
+			{
+				readySex = false;
+				collision.gameObject.GetComponent<chickenBrain>().readySex = false;
+				Instantiate(this);
+			}
+			
+			
+
+            if (collision.gameObject.tag == "Food" && collision.gameObject.GetComponent<foodSpawn>().isReadyToEat())
             {
                 Eat();
                 NewHeadingRoutine();
@@ -209,7 +231,7 @@ public class chickenBrain : MonoBehaviour
 				case "Chicken":
 					break;
 				case "Food":
-					if (!foundFood)
+					if (!foundFood && col.gameObject.GetComponent<foodSpawn>().isReadyToEat())
 					{
 						foundFood = true;
 						var x1 = transform.position[0];
