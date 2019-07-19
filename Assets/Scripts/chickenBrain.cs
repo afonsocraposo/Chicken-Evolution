@@ -32,6 +32,8 @@ public class chickenBrain : MonoBehaviour
 	float maxHealth;
     float heading;
 
+	float destroyTimer = 3;
+
     Quaternion rotation;
 
 	bool foundFood = false;
@@ -46,6 +48,7 @@ public class chickenBrain : MonoBehaviour
     CharacterController controller;
     Vector3 targetRotation;
     Animator anim;
+
 
 
     void Start()
@@ -113,7 +116,6 @@ public class chickenBrain : MonoBehaviour
 				abstinenciaTimer-=Time.deltaTime;
 				if(abstinenciaTimer<=0){
 					readySex = true;
-					print("Ready!");
 					abstinenciaTimer = abstinenciaTime;
 				}
 			}
@@ -123,6 +125,10 @@ public class chickenBrain : MonoBehaviour
         {
             transform.eulerAngles = Vector3.Lerp(transform.eulerAngles, new Vector3(transform.eulerAngles[0], transform.eulerAngles[1], 90f), 3 * Time.deltaTime);
             transform.position = new Vector3(transform.position[0], 0.5f, transform.position[2]);
+			destroyTimer -= Time.deltaTime;
+			if(destroyTimer<=0){
+				Destroy(gameObject);
+			}
         }
 
 
@@ -191,11 +197,16 @@ public class chickenBrain : MonoBehaviour
             }
 
 			
-			if (collision.gameObject.tag == "Chicken" && readySex && collision.gameObject.alive)
+			if (collision.gameObject.tag == "Chicken" && readySex && collision.gameObject.GetComponent<chickenBrain>().alive)
 			{
 				readySex = false;
 				collision.gameObject.GetComponent<chickenBrain>().readySex = false;
-				Instantiate(this);
+				var clone = Instantiate(this);
+				var cloneVisionRadiusMean = Mathf.Abs(visionRadiusMean-collision.gameObject.GetComponent<chickenBrain>().visionRadiusMean);
+				var cloneHealthMean = Mathf.Abs(healthMean-collision.gameObject.GetComponent<chickenBrain>().healthMean);
+				var cloneSpeedMean = Mathf.Abs(speedMean-collision.gameObject.GetComponent<chickenBrain>().speedMean);
+				clone.GetComponent<chickenBrain>().setChildAttributes(cloneVisionRadiusMean, cloneHealthMean, cloneSpeedMean); 
+
 			}
 			
 			
@@ -210,6 +221,30 @@ public class chickenBrain : MonoBehaviour
 
 	int DistanceSort(Collider a, Collider b){
 		return (transform.position - a.transform.position).sqrMagnitude.CompareTo((transform.position - b.transform.position).sqrMagnitude);
+	}
+
+	public void setChildAttributes(float visionRadiusMean, float healthMean, float speedMean){
+		
+		anim = GetComponent<Animator>();
+
+		visionRadius = RandomFromDistribution.RandomNormalDistribution(visionRadiusMean, 1);
+        if (visionRadius < 0) visionRadius = 0;
+
+        maxHealth = RandomFromDistribution.RandomNormalDistribution(healthMean, 1);
+        if (health < 0) health = 0;
+        health = maxHealth;
+
+        speed = RandomFromDistribution.RandomNormalDistribution(speedMean, 1);
+        if (speed <= 0)
+        {
+            speed = 0;
+            anim.SetInteger("Walk", 0);
+        }
+        else
+        {
+            anim.SetInteger("Walk", 1);
+        }
+        // speed = 10;
 	}
 
     void Vision()

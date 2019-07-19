@@ -26,7 +26,6 @@ public class cameraMovement : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        chickens = GameObject.FindGameObjectsWithTag("Chicken");
     }
 
     // Update is called once per frame
@@ -37,7 +36,6 @@ public class cameraMovement : MonoBehaviour
         if (Input.GetKeyDown("c"))
         {
             chicken++;
-            if (chicken >= chickens.Length) chicken = 0;
         }
 
         if (freeCamera) { 
@@ -62,6 +60,10 @@ public class cameraMovement : MonoBehaviour
 
     void LateUpdate()
     {
+        chickens = GameObject.FindGameObjectsWithTag("Chicken");
+
+        if (chicken >= chickens.Length) chicken = 0;
+
         if (!freeCamera)
         {
             // Set the position of the camera's transform to be the same as the player's, but offset by the calculated offset distance.

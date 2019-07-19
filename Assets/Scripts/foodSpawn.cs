@@ -16,6 +16,7 @@ public class foodSpawn : MonoBehaviour
 
     bool readyToEat = false;
     
+    Collider col;
 
     // Start is called before the first frame update
     void Start()
@@ -29,6 +30,7 @@ public class foodSpawn : MonoBehaviour
         maxX = 0.9f*(5 * scale[0]);
         minZ = 0.9f*(-5 * scale[2]);
         maxZ = 0.9f*(5 * scale[2]);
+        col = GetComponent<Collider>();
 
         randomPosition();
     }
@@ -42,9 +44,9 @@ public class foodSpawn : MonoBehaviour
             transform.position = new Vector3(transform.position[0], transform.localScale[0]/2f, transform.position[2]);
         }else{
             readyToEat = true;
+            col.isTrigger = false;
         }
 
-        print(readyToEat);
     }
 
     void OnCollisionEnter(Collision collision)
@@ -59,6 +61,7 @@ public class foodSpawn : MonoBehaviour
     void randomPosition()
     {
         readyToEat = false;
+        col.isTrigger = true;
         timeToGrow = growTime;
         transform.localScale = new Vector3(1f,1f,1f)*(1f-0.8f*timeToGrow/growTime);
         transform.position = new Vector3(Random.Range(minX, maxX), transform.localScale[0]/2f, Random.Range(minZ, maxZ));   
