@@ -10,19 +10,20 @@ public class foodSpawn : MonoBehaviour
     float minZ;
     float maxZ;
 
-    public float timeToGrow = 5;
+    public float growTime = 5;
     
-    float growTime;
+    float timeToGrow;
 
     bool readyToEat = false;
-    
+    bool firstFood = true;
+
     Collider col;
 
     // Start is called before the first frame update
     void Start()
     {
 
-        growTime = timeToGrow;
+        timeToGrow = 0;
 
         floor = GameObject.FindGameObjectWithTag("Floor");
         var scale = floor.transform.localScale;
@@ -38,10 +39,10 @@ public class foodSpawn : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        transform.localScale = new Vector3(1f,1f,1f)*(1f-0.8f*timeToGrow/growTime);
+        transform.position = new Vector3(transform.position[0], transform.localScale[0]/2f, transform.position[2]);
         if(timeToGrow>=0){
             timeToGrow -= Time.deltaTime;
-            transform.localScale = new Vector3(1f,1f,1f)*(1f-0.8f*timeToGrow/growTime);
-            transform.position = new Vector3(transform.position[0], transform.localScale[0]/2f, transform.position[2]);
         }else{
             readyToEat = true;
             col.isTrigger = false;
@@ -62,7 +63,11 @@ public class foodSpawn : MonoBehaviour
     {
         readyToEat = false;
         col.isTrigger = true;
-        timeToGrow = growTime;
+        if(!firstFood){
+            timeToGrow = growTime;
+        }else{
+            firstFood = false;
+        }
         transform.localScale = new Vector3(1f,1f,1f)*(1f-0.8f*timeToGrow/growTime);
         transform.position = new Vector3(Random.Range(minX, maxX), transform.localScale[0]/2f, Random.Range(minZ, maxZ));   
     }

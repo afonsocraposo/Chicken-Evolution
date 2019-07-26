@@ -9,6 +9,7 @@ TagManager:
   - Chicken
   - Food
   - Chicken Info
+  - Chicken Stats
   layers:
   - Default
   - TransparentFX

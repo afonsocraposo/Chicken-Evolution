@@ -13,30 +13,39 @@ public class chickenBrain : MonoBehaviour
 	public float visionRadiusStd;
 	public float speedMean;
 	public float speedStd;
+	public float hungerMean;
+	public float hungerStd;
 	public float abstinenciaTime;
+
 
 	[Header("Chicken Interactions")]
     public float directionChangeInterval;
     public float maxHeadingChange;
-	public float healthLostTimeFactor;
 	public float foodHealthGain;
 
 	[Header("Unity Stuff")]
 	public Image healthBar;
 	public GameObject chickenInfo;
     public Text nameTagText;
+	public GameObject statsInfo;
+	public Text healthText;
+	public Text visionText;
+	public Text speedText;
+	public Text hungerText;
 
     float visionRadius;
     float speed;
 	float health;
 	float maxHealth;
     float heading;
+	float hunger;
 
 	float destroyTimer = 3;
 
     Quaternion rotation;
 
 	bool foundFood = false;
+	bool foundChicken = false;
 	bool alive = true;
 	bool readySex = false;
 	
@@ -79,12 +88,20 @@ public class chickenBrain : MonoBehaviour
         }
         // speed = 10;
 
+		hunger = RandomFromDistribution.RandomNormalDistribution(hungerMean, hungerStd);
+        if (hunger < 1) hunger = 1;
+
         StartCoroutine(NewHeading());
 
         string[] lines = System.IO.File.ReadAllLines(path);
 
         nameTag = lines[Random.Range(0, lines.Length)];
         nameTagText.text = nameTag;
+
+		healthText.text = "Health: " + maxHealth.ToString("0.00");
+		visionText.text = "Vision: " + visionRadius.ToString("0.00");
+		speedText.text = "Speed: " + speed.ToString("0.00");
+		hungerText.text = "Hunger: " + hunger.ToString("0.00");
 
 		abstinenciaTimer = abstinenciaTime;
 
@@ -94,6 +111,8 @@ public class chickenBrain : MonoBehaviour
     void Update()
     {
 
+		statsInfo.SetActive(false);
+		statsInfo.transform.LookAt(Camera.main.gameObject.transform.position);
 		chickenInfo.transform.LookAt(Camera.main.gameObject.transform.position);
 
 		if(alive){
@@ -110,7 +129,7 @@ public class chickenBrain : MonoBehaviour
 			//transform.position += transform.TransformDirection(Vector3.forward) * speed * Input.GetAxis("Vertical") * Time.deltaTime;
 		
 			// update Health
-			adjustHealth( -Time.deltaTime * healthLostTimeFactor);
+			adjustHealth( -Time.deltaTime * hunger);
 
 			if(!readySex){
 				abstinenciaTimer-=Time.deltaTime;
@@ -174,7 +193,7 @@ public class chickenBrain : MonoBehaviour
 
     void NewHeadingRoutine()
     {
-		if (!foundFood)
+		if (!foundFood && !foundChicken)
 		{
 			heading = getDegrees(Random.Range(heading - maxHeadingChange / 2, heading + maxHeadingChange / 2), 360);
 		}
@@ -183,7 +202,7 @@ public class chickenBrain : MonoBehaviour
     void OnCollisionEnter(Collision collision)
     {
         if (alive) { 
-            if (collision.gameObject.tag == "Wall" || (collision.gameObject.tag == "Chicken" && !foundFood))
+            if (collision.gameObject.tag == "Wall" || (collision.gameObject.tag == "Chicken" && !foundFood && !foundChicken))
             {
                 var d = transform.forward;
                 var n = collision.contacts[0].normal;
@@ -194,6 +213,7 @@ public class chickenBrain : MonoBehaviour
                 var angle = getDegrees(getAngle(0, d[0], 0, d[2]), 360);
 
                 transform.Rotate(0f, getDegrees(angle - heading, 180), 0f, Space.Self);
+
             }
 
 			
@@ -205,7 +225,8 @@ public class chickenBrain : MonoBehaviour
 				var cloneVisionRadiusMean = Mathf.Abs(visionRadiusMean-collision.gameObject.GetComponent<chickenBrain>().visionRadiusMean);
 				var cloneHealthMean = Mathf.Abs(healthMean-collision.gameObject.GetComponent<chickenBrain>().healthMean);
 				var cloneSpeedMean = Mathf.Abs(speedMean-collision.gameObject.GetComponent<chickenBrain>().speedMean);
-				clone.GetComponent<chickenBrain>().setChildAttributes(cloneVisionRadiusMean, cloneHealthMean, cloneSpeedMean); 
+				var cloneHungerMean = Mathf.Abs(hungerMean-collision.gameObject.GetComponent<chickenBrain>().hungerMean);
+				clone.GetComponent<chickenBrain>().setChildAttributes(cloneVisionRadiusMean, cloneHealthMean, cloneSpeedMean, cloneHungerMean); 
 
 			}
 			
@@ -223,18 +244,21 @@ public class chickenBrain : MonoBehaviour
 		return (transform.position - a.transform.position).sqrMagnitude.CompareTo((transform.position - b.transform.position).sqrMagnitude);
 	}
 
-	public void setChildAttributes(float visionRadiusMean, float healthMean, float speedMean){
+	public void setChildAttributes(float visionRadiusMean, float healthMean, float speedMean, float hungerMean){
 		
 		anim = GetComponent<Animator>();
 
-		visionRadius = RandomFromDistribution.RandomNormalDistribution(visionRadiusMean, 1);
+		visionRadius = RandomFromDistribution.RandomNormalDistribution(visionRadiusMean, Mathf.Abs(visionRadius-visionRadiusMean));
         if (visionRadius < 0) visionRadius = 0;
 
-        maxHealth = RandomFromDistribution.RandomNormalDistribution(healthMean, 1);
+		hunger = RandomFromDistribution.RandomNormalDistribution(hungerMean, Mathf.Abs(hunger-hungerMean));
+        if (hunger < 1) hunger = 1;
+
+        maxHealth = RandomFromDistribution.RandomNormalDistribution(healthMean, Mathf.Abs(maxHealth-healthMean));
         if (health < 0) health = 0;
         health = maxHealth;
 
-        speed = RandomFromDistribution.RandomNormalDistribution(speedMean, 1);
+        speed = RandomFromDistribution.RandomNormalDistribution(speedMean, Mathf.Abs(speed-speedMean));
         if (speed <= 0)
         {
             speed = 0;
@@ -254,6 +278,7 @@ public class chickenBrain : MonoBehaviour
 	    System.Array.Sort(hitColliders, DistanceSort);
 
 	    foundFood = false;
+		foundChicken = false;
 
 		foreach (Collider col in hitColliders)
 		{
@@ -264,9 +289,19 @@ public class chickenBrain : MonoBehaviour
 				case "Floor":
 					break;
 				case "Chicken":
+					if ((col.gameObject!=gameObject) && readySex && col.gameObject.GetComponent<chickenBrain>().isReadyToSex())
+						{
+						foundChicken = true;
+						var x1 = transform.position[0];
+						var x2 = col.gameObject.transform.position[0];
+						var y1 = transform.position[2];
+						var y2 = col.gameObject.transform.position[2];
+						heading = getDegrees(getAngle(x1, x2, y1, y2), 360);
+						return;
+					}
 					break;
 				case "Food":
-					if (!foundFood && col.gameObject.GetComponent<foodSpawn>().isReadyToEat())
+					if (col.gameObject.GetComponent<foodSpawn>().isReadyToEat())
 					{
 						foundFood = true;
 						var x1 = transform.position[0];
@@ -319,10 +354,17 @@ public class chickenBrain : MonoBehaviour
 		}
     }
 
+	public bool isReadyToSex(){
+		return readySex;
+	}
+
     public float getAngle(float x1, float x2, float y1, float y2)
 	{
         return Mathf.Atan2(y2 - y1, x2-x1) * Mathf.Rad2Deg;
 	}
 
+	public void setDisplayInfo(bool displayInfo){
+		statsInfo.SetActive(displayInfo);
+	}
 
 }
