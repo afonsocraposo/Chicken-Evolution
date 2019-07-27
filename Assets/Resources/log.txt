@@ -1,3 +1,4 @@
 Population of chickens in each second:
 1
 1
+1
