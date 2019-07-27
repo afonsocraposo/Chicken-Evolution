@@ -248,17 +248,17 @@ public class chickenBrain : MonoBehaviour
 		
 		anim = GetComponent<Animator>();
 
-		visionRadius = RandomFromDistribution.RandomNormalDistribution(visionRadiusMean, Mathf.Abs(visionRadius-visionRadiusMean));
+		visionRadius = RandomFromDistribution.RandomNormalDistribution(visionRadiusMean, Mathf.Abs(visionRadius-visionRadiusMean)/3);
         if (visionRadius < 0) visionRadius = 0;
 
-		hunger = RandomFromDistribution.RandomNormalDistribution(hungerMean, Mathf.Abs(hunger-hungerMean));
+		hunger = RandomFromDistribution.RandomNormalDistribution(hungerMean, Mathf.Abs(hunger-hungerMean)/3);
         if (hunger < 1) hunger = 1;
 
-        maxHealth = RandomFromDistribution.RandomNormalDistribution(healthMean, Mathf.Abs(maxHealth-healthMean));
+        maxHealth = RandomFromDistribution.RandomNormalDistribution(healthMean, Mathf.Abs(maxHealth-healthMean)/3);
         if (health < 0) health = 0;
         health = maxHealth;
 
-        speed = RandomFromDistribution.RandomNormalDistribution(speedMean, Mathf.Abs(speed-speedMean));
+        speed = RandomFromDistribution.RandomNormalDistribution(speedMean, Mathf.Abs(speed-speedMean)/3);
         if (speed <= 0)
         {
             speed = 0;
@@ -289,7 +289,7 @@ public class chickenBrain : MonoBehaviour
 				case "Floor":
 					break;
 				case "Chicken":
-					if ((col.gameObject!=gameObject) && readySex && col.gameObject.GetComponent<chickenBrain>().isReadyToSex())
+					if ((col.gameObject!=gameObject) && readySex && col.gameObject.GetComponent<chickenBrain>().isReadyToSex() && health>=0.5*maxHealth)
 						{
 						foundChicken = true;
 						var x1 = transform.position[0];
@@ -301,7 +301,7 @@ public class chickenBrain : MonoBehaviour
 					}
 					break;
 				case "Food":
-					if (col.gameObject.GetComponent<foodSpawn>().isReadyToEat())
+					if (col.gameObject.GetComponent<foodSpawn>().isReadyToEat() && health<=0.9*maxHealth)
 					{
 						foundFood = true;
 						var x1 = transform.position[0];
