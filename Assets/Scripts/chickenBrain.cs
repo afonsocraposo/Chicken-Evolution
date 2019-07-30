@@ -59,7 +59,6 @@ public class chickenBrain : MonoBehaviour
     Animator anim;
 
 
-
     void Start()
     {
 
@@ -69,27 +68,30 @@ public class chickenBrain : MonoBehaviour
         heading = Random.Range(0, 360);
         transform.eulerAngles = new Vector3(0, heading, 0);	
 
+		
 		visionRadius = RandomFromDistribution.RandomNormalDistribution(visionRadiusMean, visionRadiusStd);
-        if (visionRadius < 0) visionRadius = 0;
+		if (visionRadius < 0) visionRadius = 0;
 
-        maxHealth = RandomFromDistribution.RandomNormalDistribution(healthMean, healthStd);
-        if (health < 0) health = 0;
-        health = maxHealth;
+		maxHealth = RandomFromDistribution.RandomNormalDistribution(healthMean, healthStd);
+		if (health < 0) health = 0;
+		health = maxHealth;
 
-        speed = RandomFromDistribution.RandomNormalDistribution(speedMean, speedStd);
-        if (speed <= 0)
-        {
-            speed = 0;
-            anim.SetInteger("Walk", 0);
-        }
-        else
-        {
-            anim.SetInteger("Walk", 1);
-        }
-        // speed = 10;
+		speed = RandomFromDistribution.RandomNormalDistribution(speedMean, speedStd);
+		if (speed <= 0)
+		{
+			speed = 0;
+			anim.SetInteger("Walk", 0);
+		}
+		else
+		{
+			anim.SetInteger("Walk", 1);
+		}
+		// speed = 10;
 
 		hunger = RandomFromDistribution.RandomNormalDistribution(hungerMean, hungerStd);
-        if (hunger < 1) hunger = 1;
+		if (hunger < 1) hunger = 1;
+
+	
 
         StartCoroutine(NewHeading());
 
@@ -217,15 +219,15 @@ public class chickenBrain : MonoBehaviour
             }
 
 			
-			if (collision.gameObject.tag == "Chicken" && readySex && collision.gameObject.GetComponent<chickenBrain>().alive)
+			if (collision.gameObject.tag == "Chicken" && isReadyToSex() && collision.gameObject.GetComponent<chickenBrain>().isReadyToSex())
 			{
 				readySex = false;
 				collision.gameObject.GetComponent<chickenBrain>().readySex = false;
 				var clone = Instantiate(this);
-				var cloneVisionRadiusMean = Mathf.Abs(visionRadiusMean-collision.gameObject.GetComponent<chickenBrain>().visionRadiusMean);
-				var cloneHealthMean = Mathf.Abs(healthMean-collision.gameObject.GetComponent<chickenBrain>().healthMean);
-				var cloneSpeedMean = Mathf.Abs(speedMean-collision.gameObject.GetComponent<chickenBrain>().speedMean);
-				var cloneHungerMean = Mathf.Abs(hungerMean-collision.gameObject.GetComponent<chickenBrain>().hungerMean);
+				var cloneVisionRadiusMean = (visionRadiusMean+collision.gameObject.GetComponent<chickenBrain>().visionRadiusMean)/2;
+				var cloneHealthMean = (healthMean+collision.gameObject.GetComponent<chickenBrain>().healthMean)/2;
+				var cloneSpeedMean = (speedMean+collision.gameObject.GetComponent<chickenBrain>().speedMean)/2;
+				var cloneHungerMean = (hungerMean+collision.gameObject.GetComponent<chickenBrain>().hungerMean)/2;
 				clone.GetComponent<chickenBrain>().setChildAttributes(cloneVisionRadiusMean, cloneHealthMean, cloneSpeedMean, cloneHungerMean); 
 
 			}
@@ -248,27 +250,21 @@ public class chickenBrain : MonoBehaviour
 		
 		anim = GetComponent<Animator>();
 
-		visionRadius = RandomFromDistribution.RandomNormalDistribution(visionRadiusMean, Mathf.Abs(visionRadius-visionRadiusMean)/3);
-        if (visionRadius < 0) visionRadius = 0;
+		this.visionRadiusMean = visionRadiusMean;
+		this.visionRadiusStd = Mathf.Abs(visionRadius-visionRadiusMean)/2;
+		//this.visionRadiusStd = Mathf.Abs(0.1f*visionRadiusMean);
+		
+		this.hungerMean = hungerMean;
+		this.hungerStd = Mathf.Abs(hunger-hungerMean)/2;
+		//this.hungerStd = Mathf.Abs(0.1f*hungerMean);
 
-		hunger = RandomFromDistribution.RandomNormalDistribution(hungerMean, Mathf.Abs(hunger-hungerMean)/3);
-        if (hunger < 1) hunger = 1;
+		this.healthMean = healthMean;
+		this.healthStd = Mathf.Abs(health-healthMean)/2;
+		//this.healthStd = Mathf.Abs(0.1f*healthMean);
 
-        maxHealth = RandomFromDistribution.RandomNormalDistribution(healthMean, Mathf.Abs(maxHealth-healthMean)/3);
-        if (health < 0) health = 0;
-        health = maxHealth;
-
-        speed = RandomFromDistribution.RandomNormalDistribution(speedMean, Mathf.Abs(speed-speedMean)/3);
-        if (speed <= 0)
-        {
-            speed = 0;
-            anim.SetInteger("Walk", 0);
-        }
-        else
-        {
-            anim.SetInteger("Walk", 1);
-        }
-        // speed = 10;
+		this.speedMean = speedMean;
+		this.speedStd = Mathf.Abs(speed-speedMean)/2;
+		//this.speedStd = Mathf.Abs(0.1f*speedMean);
 	}
 
     void Vision()
@@ -289,7 +285,7 @@ public class chickenBrain : MonoBehaviour
 				case "Floor":
 					break;
 				case "Chicken":
-					if ((col.gameObject!=gameObject) && readySex && col.gameObject.GetComponent<chickenBrain>().isReadyToSex() && health>=0.5*maxHealth)
+					if ((col.gameObject!=gameObject) && isReadyToSex() && col.gameObject.GetComponent<chickenBrain>().isReadyToSex())
 						{
 						foundChicken = true;
 						var x1 = transform.position[0];
@@ -315,6 +311,18 @@ public class chickenBrain : MonoBehaviour
 					break;
 			}
 		}
+	}
+
+	public float getHealth(){
+		return maxHealth;
+	}
+
+	public float getSpeed(){
+		return speed;
+	}
+
+	public float getHunger(){
+		return hunger;
 	}
 
 	public float getDegrees(float degree, int mode)
@@ -355,7 +363,7 @@ public class chickenBrain : MonoBehaviour
     }
 
 	public bool isReadyToSex(){
-		return readySex;
+		return readySex && health>=0.5*maxHealth && alive;
 	}
 
     public float getAngle(float x1, float x2, float y1, float y2)

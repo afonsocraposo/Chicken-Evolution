@@ -29,15 +29,34 @@ public class cameraMovement : MonoBehaviour
 
     bool displayInfo = false;
 
+    bool paused;
+
     // Start is called before the first frame update
     void Start()
     {
-        WriteLine("Assets/Resources/", "log.txt", "Population of chickens in each second:");
+        WriteLine("Assets/Resources/", "log.txt", "1 - Health, 2 - Vision, 3 - Speed, 4 - Hunger 5 - Population");
+        Cursor.lockState = CursorLockMode.Locked;   // keep confined to center of screen
+        PauseGame();
     }
 
     // Update is called once per frame
     void Update()
     {
+
+        if(Input.GetKeyDown("p")) 
+        {
+            if (!paused) 
+            {
+                PauseGame();
+            }else{
+                ContinueGame();   
+            }
+        } 
+
+        if(Input.GetKeyDown("escape"))
+        {
+            Application.Quit();
+        }
 
         chickens = GameObject.FindGameObjectsWithTag("Chicken");
 
@@ -95,7 +114,25 @@ public class cameraMovement : MonoBehaviour
 
         logTimer -= Time.deltaTime;
         if(logTimer<=0){
+            var healthStr = "";
+            var visionStr = "";
+            var speedStr = "";
+            var hungerStr = "";
+            
+            for(int i = 0; i<chickens.Length; i++){
+                var chick = chickens[i];
+                healthStr += chick.GetComponent<chickenBrain>().getHealth() + ", ";
+                visionStr += chick.GetComponent<chickenBrain>().getVisionRadius() + ", ";
+                speedStr += chick.GetComponent<chickenBrain>().getSpeed() + ", ";
+                hungerStr += chick.GetComponent<chickenBrain>().getHunger() + ", ";
+            }
+
+            AppendLine("Assets/Resources/", "log.txt", healthStr);
+            AppendLine("Assets/Resources/", "log.txt", visionStr);
+            AppendLine("Assets/Resources/", "log.txt", speedStr);
+            AppendLine("Assets/Resources/", "log.txt", hungerStr);
             AppendLine("Assets/Resources/", "log.txt", chickens.Length.ToString());
+            AppendLine("Assets/Resources/", "log.txt", "");
             logTimer = 1;
         }
         
@@ -132,4 +169,19 @@ public class cameraMovement : MonoBehaviour
          }
          return retValue;
      }
+
+     private void PauseGame()
+    {
+        Cursor.lockState = CursorLockMode.None;
+        Time.timeScale = 0;
+        paused = true;
+        //Disable scripts that still work while timescale is set to 0
+    } 
+    private void ContinueGame()
+    {
+        Cursor.lockState = CursorLockMode.Locked;   // keep confined to center of screen
+        Time.timeScale = 1;
+        //enable the scripts again
+        paused = false;
+    }
 }
